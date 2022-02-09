@@ -5,11 +5,17 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"mntool/idmaker"
+	"mntool/limiter"
 	"strings"
+	"time"
 )
 
 func main() {
 	idmakerDemo()
+
+	limiterDemo()
+
+	limiterGroupDemo()
 }
 
 //create database mndb
@@ -44,5 +50,27 @@ func idmakerDemo() {
 			return
 		}
 		fmt.Printf("[INFO] GetId=%d\n", id)
+	}
+}
+
+func limiterDemo() {
+	l := limiter.NewLimiter(time.Second, 2)
+	for i := 0; i < 3; i++ {
+		b := l.Check()
+		fmt.Printf("[INFO] %v\n", b)
+	}
+}
+
+func limiterGroupDemo() {
+	lg := limiter.NewLimiterGroup()
+	lg.Add("add", time.Second, 2)
+	lg.Add("dec", time.Second, 3)
+
+	for i := 0; i < 4; i++ {
+		b := lg.Check("add")
+		fmt.Printf("[INFO] add %v\n", b)
+
+		b = lg.Check("dec")
+		fmt.Printf("[INFO] dec %v\n", b)
 	}
 }
